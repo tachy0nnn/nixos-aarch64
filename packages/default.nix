@@ -3,7 +3,7 @@
 {
   perSystem = { system, pkgs, ... }:
     let
-      orangepi3bDtb = "rockchip/rk3566-orangepi-3b.dtb";
+      orangepi3bDtb = "rockchip/rk3566-orangepi-3b-v2.1.dtb";
       orangepi3bIdbloaderSector = 64;
       orangepi3bUBootSector = 16384;
 
@@ -34,16 +34,7 @@
       packages = rec {
         linux-bigtreetech = pkgsCross.callPackage ./bigtreetech-kernel {
           bigtreetechSrc = inputs.bigtreetech-kernel;
-          kernelPatches = with pkgsCross.kernelPatches; [
-            bridge_stp_helper
-            request_key_helper
-          ];
-        };
-
-        uwe5622-firmware = pkgsCross.callPackage ./uwe5622-firmware { };
-
-        linux-orangepi-3b = pkgsCross.callPackage ./orangepi-3b-kernel {
-          kernelPatches = with pkgsCross.kernelPatches; [
+          kernelPatches = with pkgsCross.kernelPatches;[
             bridge_stp_helper
             request_key_helper
           ];
@@ -91,9 +82,8 @@
             sdImage.firmwareSize = 30;
             sdImage.compressImage = true;
             networking.networkmanager.enable = true;
-            sdImage.populateFirmwareCommands = ''
-              cp -r ${uwe5622-firmware}/lib/firmware/* firmware/
-            '';
+            sdImage.populateFirmwareCommands = "";
+
             sdImage.extraPostbuild = ''
               dd if=${orangepi-3b-uboot}/idbloader.img of=$img seek=${toString orangepi3bIdbloaderSector} conv=notrunc status=none
               dd if=${orangepi-3b-uboot}/u-boot.itb of=$img seek=${toString orangepi3bUBootSector} conv=notrunc status=none
@@ -105,7 +95,7 @@
 
         verify-orangepi-3b = pkgs.callPackage ./orangepi-3b-verify {
           imagePackage = orangepi-3b-image;
-          kernelPackage = linux-orangepi-3b;
+          kernelPackage = sdimage-orangepi-3b.config.boot.kernelPackages.kernel;
           ubootPackage = orangepi-3b-uboot;
           dtbPath = orangepi3bDtb;
           idbloaderSector = orangepi3bIdbloaderSector;

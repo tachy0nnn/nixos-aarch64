@@ -1,18 +1,11 @@
 { config, lib, pkgs, ... }:
 
 {
-  nixpkgs.overlays = [
-    (self: _: {
-      linuxPackages-orangepi-3b = self.linuxPackagesFor self.linux-orangepi-3b;
-    })
-  ];
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  boot.extraModulePackages = with config.boot.kernelPackages; [ ];
-  boot.kernelPackages = pkgs.linuxPackages-orangepi-3b;
-  hardware.deviceTree.enable = true;
   boot.consoleLogLevel = lib.mkDefault 7;
   boot.kernelParams = [ "console=ttyS0,1500000" "console=tty0" "consoleblank=0" ];
-  boot.kernelModules = [ "sprdwl_ng" "unisoc_wifi" ];
+  boot.kernelModules = [ "brcmfmac" ];
   networking.networkmanager.enable = true;
 
   boot.initrd.availableKernelModules = lib.mkForce [
@@ -31,32 +24,37 @@
     "uas"
     "usb_storage"
   ];
-
-  fileSystems = {
-    # The /boot/firmware filesystem also uses the same block device, but it has the "noauto" option,
-    # so it should not b a problem (mounting a vfat file system twice at the same is forbidden).
-    "/lib/firmware" = {
-      device = "/dev/disk/by-label/FIRMWARE";
-      fsType = "vfat";
-      options = [ "ro" "nofail" ];
-    };
-  };
-
-  systemd.services.systemd-modules-load =
-    let
-      firmwareMountingService = "lib-firmware.mount";
-    in
-    {
-      wants = [ firmwareMountingService ];
-      after = [ firmwareMountingService ];
-    };
-
-  hardware = {
-    firmware = with pkgs; [
-      uwe5622-firmware
-    ];
-  };
-
   hardware.enableRedistributableFirmware = true;
-  hardware.deviceTree.name = "rockchip/rk3566-orangepi-3b.dtb";
+
+  # DTB v2.1
+  hardware.deviceTree.enable = true;
+  hardware.deviceTree.name = "rockchip/rk3566-orangepi-3b-v2.1.dtb";
+
+  # AP6256 firmware from Orange Pi's official repository
+  hardware.firmware =
+    let
+      fw_bin = pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/orangepi-xunlong/firmware/master/fw_bcm43456c5_ag.bin";
+        hash = "sha256-pgMST/hiozJj3wzUYXIvlck0a6T2PF4AJAM8Mo2QOl4=";
+      };
+      fw_txt = pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/orangepi-xunlong/firmware/master/nvram_ap6256.txt";
+        hash = "sha256-WIQwtMLBZ8oDXxfadHi+w9SSJIcVJhDThdXMuPfAp18=";
+      };
+    in
+    [
+      (pkgs.stdenvNoCC.mkDerivation {
+        name = "orangepi3b-v21-firmware";
+        dontUnpack = true;
+        installPhase = ''
+          mkdir -p $out/lib/firmware/brcm
+          cp ${fw_bin} $out/lib/firmware/brcm/brcmfmac43456-sdio.xunlong,orangepi-3b-v2.1.bin
+          cp ${fw_txt} $out/lib/firmware/brcm/brcmfmac43456-sdio.xunlong,orangepi-3b-v2.1.txt
+          ln -s brcmfmac43456-sdio.xunlong,orangepi-3b-v2.1.bin $out/lib/firmware/brcm/brcmfmac43456-sdio.xunlong.orangepi-3b-v2.1.bin
+          ln -s brcmfmac43456-sdio.xunlong,orangepi-3b-v2.1.txt $out/lib/firmware/brcm/brcmfmac43456-sdio.xunlong.orangepi-3b-v2.1.txt
+          ln -s brcmfmac43456-sdio.xunlong,orangepi-3b-v2.1.bin $out/lib/firmware/brcm/brcmfmac43456-sdio.bin
+          ln -s brcmfmac43456-sdio.xunlong,orangepi-3b-v2.1.txt $out/lib/firmware/brcm/brcmfmac43456-sdio.txt
+        '';
+      })
+    ];
 }
