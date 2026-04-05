@@ -30,4 +30,9 @@ Forked this from [5aaee9](https://github.com/5aaee9/nixos-aarch64), edited it so
 nix build .#orangepi-3b-image --extra-experimental-features 'nix-command flakes'
 ```
 
+- Deploy to the server:
+```bash
+deploy .#opi3b
+```
+
 That alias resolves to the existing `sdimage-orangepi-3b` output and produces the SD image in `./result`.
