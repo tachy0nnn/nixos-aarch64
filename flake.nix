@@ -10,6 +10,12 @@
       flake = false;
     };
 
+    agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
+
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+
     bigtreetech-kernel = {
       url = "github:bigtreetech/linux/linux-6.1.y-cb1";
       flake = false;
@@ -41,8 +47,33 @@
     };
   };
 
-  outputs = inputs @ { flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } ({ self, ... }: {
+      systems = [ "x86_64-linux" "aarch64-linux" ];
+
+      flake = {
+        nixosConfigurations.opi3b = inputs.nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            inputs.agenix.nixosModules.default
+            self.nixosModules.orangepi-3b-kernel
+            self.nixosModules.firstBoot
+            ({ ... }: {
+              networking.hostName = "opi3b";
+            })
+          ];
+        };
+
+        deploy.nodes.opi3b = {
+          hostname = "192.168.3.163";
+          sshUser = "root";
+          profiles.system = {
+            user = "root";
+            path = inputs.deploy-rs.lib.aarch64-linux.activate.nixos self.nixosConfigurations.opi3b;
+          };
+        };
+      };
+
       imports = [
         ./modules
         ./packages
@@ -50,21 +81,19 @@
         inputs.devenv.flakeModule
       ];
 
-      systems = [ "x86_64-linux" "aarch64-linux" ];
-
       perSystem = { config, self', inputs', pkgs, system, ... }: {
-        devenv.shells.default = {
+        devShells.default = pkgs.mkShell {
           name = "nixos-aarch64";
-
-          packages = with pkgs; [
-            lefthook
-            nixpkgs-fmt
+          packages = [
+            inputs.deploy-rs.packages.${system}.deploy-rs
+            inputs.agenix.packages.${system}.default
+            pkgs.lefthook
+            pkgs.nixpkgs-fmt
           ];
-
-          enterShell = ''
+          shellHook = ''
             lefthook install
           '';
         };
       };
-    };
+    });
 }
