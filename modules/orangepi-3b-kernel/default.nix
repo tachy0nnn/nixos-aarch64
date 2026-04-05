@@ -11,17 +11,25 @@
   boot.kernelPackages = pkgs.linuxPackages-orangepi-3b;
   hardware.deviceTree.enable = true;
   boot.consoleLogLevel = lib.mkDefault 7;
-  boot.kernelParams = [ "console=ttyS0,1500000" "consoleblank=0" ];
-  boot.kernelModules = [ "sprdwl_ng" ];
+  boot.kernelParams = [ "console=ttyS0,1500000" "console=tty0" "consoleblank=0" ];
+  boot.kernelModules = [ "sprdwl_ng" "unisoc_wifi" ];
+  networking.networkmanager.enable = true;
 
   boot.initrd.availableKernelModules = lib.mkForce [
     "ext4"
     "sd_mod"
     "sr_mod"
     "mmc_block"
+    "dw_mmc_rockchip"
+    "dw_mmc_pltfm"
+    "dw_mmc"
+    "sdhci_pltfm"
+    "sdhci_of_dwcmshc"
     "ehci_hcd"
     "ohci_hcd"
     "xhci_hcd"
+    "uas"
+    "usb_storage"
   ];
 
   fileSystems = {
@@ -42,11 +50,12 @@
       wants = [ firmwareMountingService ];
       after = [ firmwareMountingService ];
     };
-  # hardware = {
-  #   firmware = with pkgs; [
-  #     uwe5622-firmware
-  #   ];
-  # };
+
+  hardware = {
+    firmware = with pkgs; [
+      uwe5622-firmware
+    ];
+  };
 
   hardware.enableRedistributableFirmware = true;
   hardware.deviceTree.name = "rockchip/rk3566-orangepi-3b.dtb";

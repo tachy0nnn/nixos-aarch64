@@ -14,6 +14,7 @@
   config = {
     boot.loader.grub.enable = false;
     boot.loader.generic-extlinux-compatible.enable = true;
+    networking.useDHCP = lib.mkDefault true;
     networking.firewall.enable = false;
 
     boot.initrd.systemd = {

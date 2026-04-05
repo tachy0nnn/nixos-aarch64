@@ -6,3 +6,7 @@
 
 .devenv
 .direnv
+/img
+/.omx
+*.txt
+*.sh

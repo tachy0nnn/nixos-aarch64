@@ -3,7 +3,8 @@
 
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:5aaee9/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-23-11.url = "github:NixOS/nixpkgs/nixos-23.11";
     armbian = {
       url = "github:armbian/build";
       flake = false;
@@ -15,6 +16,7 @@
     };
 
     devenv.url = "github:cachix/devenv";
+    mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     nix2container.url = "github:nlewo/nix2container";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -27,11 +29,6 @@
       url = "github:radxa/u-boot/stable-4.19-rock3";
       flake = false;
     };
-
-    # orangepi-kernel = {
-    #   url = "github:orangepi-xunlong/linux-orangepi/orange-pi-5.10-rk35xx";
-    #   flake = false;
-    # };
 
     rkbin = {
       url = "github:rockchip-linux/rkbin";

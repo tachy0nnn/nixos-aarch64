@@ -1,4 +1,4 @@
-{ self, inputs, ... }:
+{ self, inputs, lib, ... }:
 
 {
   flake.nixosModules = {
@@ -19,11 +19,13 @@
       nix.nixPath = [
         "nixpkgs=${inputs.nixpkgs}"
       ];
+      system.stateVersion = lib.mkDefault "25.11";
 
       services.openssh = {
         enable = true;
         settings.PermitRootLogin = "yes";
       };
+      networking.networkmanager.enable = true;
       users.users.root.password = "nixos";
     };
   };

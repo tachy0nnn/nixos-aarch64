@@ -9,10 +9,14 @@
   filesToInstall = [ "spl/u-boot-spl.bin" "idbloader.img" "u-boot.itb" ];
   extraMakeFlags = [ "spl/u-boot-spl.bin" "u-boot.dtb" "u-boot.itb" ];
 
-  BL31 = "${rkbin}/bin/rk35/rk3568_bl31_v1.43.elf";
+  postPatch = ''
+    patchShebangs arch/arm/mach-rockchip/make_fit_atf.sh
+  '';
+
+  BL31 = "${rkbin}/bin/rk35/rk3568_bl31_v1.45.elf";
 
   postBuild = ''
-    ./tools/mkimage -n rk3568 -T rksd -d ${rkbin}/bin/rk35/rk3566_ddr_1056MHz_v1.18.bin:spl/u-boot-spl.bin idbloader.img
+    ./tools/mkimage -n rk3568 -T rksd -d ${rkbin}/bin/rk35/rk3566_ddr_1056MHz_v1.23.bin:spl/u-boot-spl.bin idbloader.img
   '';
 }).override ({
   # configs-rpi-allow-for-bigger-kernels.patch failed to apply

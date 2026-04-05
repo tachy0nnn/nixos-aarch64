@@ -1,11 +1,18 @@
 { self, inputs, ... }:
 
-
 {
-  perSystem = { lib, system, config, pkgs, ... }:
+  perSystem = { system, pkgs, ... }:
     let
+      orangepi3bDtb = "rockchip/rk3566-orangepi-3b.dtb";
+      orangepi3bIdbloaderSector = 64;
+      orangepi3bUBootSector = 16384;
 
       pkgsCross = import inputs.nixpkgs {
+        localSystem = system;
+        crossSystem = "aarch64-linux";
+      };
+
+      pkgsCross2311 = import inputs.nixpkgs-23-11 {
         localSystem = system;
         crossSystem = "aarch64-linux";
       };
@@ -27,7 +34,6 @@
       packages = rec {
         linux-bigtreetech = pkgsCross.callPackage ./bigtreetech-kernel {
           bigtreetechSrc = inputs.bigtreetech-kernel;
-          stdenv = pkgs.gcc9Stdenv;
           kernelPatches = with pkgsCross.kernelPatches; [
             bridge_stp_helper
             request_key_helper
@@ -37,14 +43,13 @@
         uwe5622-firmware = pkgsCross.callPackage ./uwe5622-firmware { };
 
         linux-orangepi-3b = pkgsCross.callPackage ./orangepi-3b-kernel {
-          orangepiSrc = inputs.orangepi-kernel;
           kernelPatches = with pkgsCross.kernelPatches; [
             bridge_stp_helper
             request_key_helper
           ];
         };
 
-        orangepi-3b-uboot = pkgsCross.callPackage ./orangepi-3b-uboot {
+        orangepi-3b-uboot = pkgsCross2311.callPackage ./orangepi-3b-uboot {
           src = inputs.orangepi-uboot;
           inherit (inputs) rkbin;
         };
@@ -82,16 +87,30 @@
         sdimage-orangepi-3b = (buildConfig system [
           self.nixosModules.orangepi-3b-kernel
           ({ ... }: {
+            sdImage.firmwarePartitionOffset = 32;
+            sdImage.firmwareSize = 30;
             sdImage.compressImage = true;
+            networking.networkmanager.enable = true;
             sdImage.populateFirmwareCommands = ''
               cp -r ${uwe5622-firmware}/lib/firmware/* firmware/
             '';
             sdImage.extraPostbuild = ''
-              dd if=${orangepi-3b-uboot}/idbloader.img of=$img seek=64 conv=notrunc status=none
-              dd if=${orangepi-3b-uboot}/u-boot.itb of=$img seek=16384 conv=notrunc status=none
+              dd if=${orangepi-3b-uboot}/idbloader.img of=$img seek=${toString orangepi3bIdbloaderSector} conv=notrunc status=none
+              dd if=${orangepi-3b-uboot}/u-boot.itb of=$img seek=${toString orangepi3bUBootSector} conv=notrunc status=none
             '';
           })
         ]).config.system.build.sdImage;
+
+        orangepi-3b-image = sdimage-orangepi-3b;
+
+        verify-orangepi-3b = pkgs.callPackage ./orangepi-3b-verify {
+          imagePackage = orangepi-3b-image;
+          kernelPackage = linux-orangepi-3b;
+          ubootPackage = orangepi-3b-uboot;
+          dtbPath = orangepi3bDtb;
+          idbloaderSector = orangepi3bIdbloaderSector;
+          uBootSector = orangepi3bUBootSector;
+        };
 
         sdimage-panther-x2 = (buildConfig system [
           self.nixosModules.panther-x2-kernel

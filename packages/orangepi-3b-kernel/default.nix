@@ -1,11 +1,13 @@
-{ orangepiSrc, lib, linuxManualConfig, stdenv, ubootTools, fetchFromGitHub, kernelPatches, ... }:
+{ lib, linuxManualConfig, stdenv, ubootTools, fetchFromGitHub, kernelPatches, ... }:
 
-with lib;
 let
+  vendorBranch = "orange-pi-6.1-rk35xx";
+  vendorRev = "232ed4b97b65da2b7b647c4e3c496f8594b9f3f1";
+  dtbPath = "rockchip/rk3566-orangepi-3b.dtb";
   src = fetchFromGitHub {
     owner = "orangepi-xunlong";
     repo = "linux-orangepi";
-    rev = "3c0ea83c49a1e4959161c9953f142ac91ea8ddd8";
+    rev = vendorRev;
     sha256 = "sha256-WwO+/Aug8eCNiJ5ju5wFidEotShjXA416x9PCY96Cjw=";
   };
 in
@@ -34,4 +36,11 @@ in
   # Base path too long (/boot/extlinux/../nixos/sxb3wlbx3qamav3vpy9s90kmr60pp5ij-linux-aarch64-unknown-linux-gnu-5.10.160-orangepi3b-dtbs/rockchip/rk3566-orangepi-3b.dtb)
   name = "k"; # dodge uboot length limits
   nativeBuildInputs = old.nativeBuildInputs ++ [ ubootTools ];
+  passthru = (old.passthru or { }) // {
+    orangepi3b = {
+      branch = vendorBranch;
+      rev = vendorRev;
+      dtb = dtbPath;
+    };
+  };
 })
