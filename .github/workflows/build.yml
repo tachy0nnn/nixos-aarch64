@@ -1,0 +1,21 @@
+name: "Build NixOS Image"
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: cachix/install-nix-action@v31
+    - name: Set up QEMU for aarch64
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-user-static binfmt-support
+    - name: Build Orange Pi 3B Image
+      run: nix build .#orangepi-3b-image --extra-experimental-features 'nix-command flakes'
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: orangepi-3b-image
+        path: result/sd-image/*.img.zst

@@ -1,5 +1,10 @@
 # NixOS AArch64
 
+> [!NOTE]
+> Please know that these are personal images, they may contain my public key for authorization and other stuff.
+>
+> If you want to use my images, fork my repository, remove my stuff and build images yourself.
+
 Personal NixOS Image for AArch64 machines.
 
 Forked this from [5aaee9](https://github.com/5aaee9/nixos-aarch64), edited it so it will be more focused on Orange Pi 3B.
@@ -23,6 +28,11 @@ Forked this from [5aaee9](https://github.com/5aaee9/nixos-aarch64), edited it so
 - Build the image:
 ```bash
 nix build .#orangepi-3b-image --extra-experimental-features 'nix-command flakes'
+```
+
+- Deploy to the server:
+```bash
+deploy .#opi3b
 ```
 
 That alias resolves to the existing `sdimage-orangepi-3b` output and produces the SD image in `./result`.

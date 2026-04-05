@@ -1,10 +1,18 @@
-{ src, rkbin, buildUBoot, armTrustedFirmwareAllwinner }:
+{ src, rkbin, buildUBoot, armTrustedFirmwareAllwinner, openssl, dtc, bc, swig, python3 }:
 
 (buildUBoot {
   inherit src;
   version = "2017.09-rk3588";
   defconfig = "orangepi-3b-rk3566_defconfig";
   extraMeta.platforms = [ "aarch64-linux" ];
+
+  nativeBuildInputs = [
+    openssl
+    dtc
+    bc
+    swig
+    python3
+  ];
 
   filesToInstall = [ "spl/u-boot-spl.bin" "idbloader.img" "u-boot.itb" ];
   extraMakeFlags = [ "spl/u-boot-spl.bin" "u-boot.dtb" "u-boot.itb" ];
