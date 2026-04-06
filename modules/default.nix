@@ -5,10 +5,7 @@
     cross = ./cross;
     sdimage = ./sdimage;
 
-    bigtreetech-kernel = ./bigtreetech-kernel;
-    fly-gemini-kernel = ./fly-gemini-kernel;
-    orangepi-3b-kernel = ./orangepi-3b-kernel;
-    panther-x2-kernel = ./panther-x2-kernel;
+    orangepi-3b-kernel = ./hardware/orangepi-3b;
 
     apply-overlay = {
       imports = [ ./apply-overlay ];
@@ -23,10 +20,17 @@
 
       services.openssh = {
         enable = true;
-        settings.PermitRootLogin = "yes";
+        settings = {
+          PermitRootLogin = "prohibit-password"; # "yes"
+          PasswordAuthentication = false;
+          KbdInteractiveAuthentication = false;
+        };
       };
+
       networking.networkmanager.enable = true;
-      users.users.root.password = "nixos";
+      users.users.root.hashedPassword = "!";
+
+      #users.users.root.password = "nixos";
     };
   };
 }

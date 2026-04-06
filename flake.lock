@@ -26,33 +26,16 @@
     "armbian": {
       "flake": false,
       "locked": {
-        "lastModified": 1775200012,
-        "narHash": "sha256-O8o4HP4kxWp9xfmFn67Nhgv4/zm+H/rqZ7mLyS9OMtk=",
+        "lastModified": 1775365997,
+        "narHash": "sha256-WceocNFiLeZ8QLQPwTDOodGgvChO/ga9k20Ygx9igLY=",
         "owner": "armbian",
         "repo": "build",
-        "rev": "ee436991e8992203b60a67af53deb2f2f8348ce2",
+        "rev": "28862c7c0e0e914640a40286766030b3fba1bc41",
         "type": "github"
       },
       "original": {
         "owner": "armbian",
         "repo": "build",
-        "type": "github"
-      }
-    },
-    "bigtreetech-kernel": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1691476476,
-        "narHash": "sha256-yAL6BXPLCW1cdDg9M/GKWbXF17Q07DOegFYAf0w6vmk=",
-        "owner": "bigtreetech",
-        "repo": "linux",
-        "rev": "f33ca29a323571460e56167c986a52c19a3f1e01",
-        "type": "github"
-      },
-      "original": {
-        "owner": "bigtreetech",
-        "ref": "linux-6.1.y-cb1",
-        "repo": "linux",
         "type": "github"
       }
     },
@@ -1031,23 +1014,6 @@
         "type": "github"
       }
     },
-    "radxa-uboot": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1685265454,
-        "narHash": "sha256-BBgKqVt1hFa8a+YWjk5LK+5lJ6H2vuMKSCWUZyB+sfI=",
-        "owner": "radxa",
-        "repo": "u-boot",
-        "rev": "c55987146f4f9b20f7cb2f917ca88300419afe8d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "radxa",
-        "ref": "stable-4.19-rock3",
-        "repo": "u-boot",
-        "type": "github"
-      }
-    },
     "rkbin": {
       "flake": false,
       "locked": {
@@ -1084,7 +1050,6 @@
       "inputs": {
         "agenix": "agenix",
         "armbian": "armbian",
-        "bigtreetech-kernel": "bigtreetech-kernel",
         "deploy-rs": "deploy-rs",
         "devenv": "devenv",
         "flake-parts": "flake-parts_4",
@@ -1093,7 +1058,6 @@
         "nixpkgs": "nixpkgs_5",
         "nixpkgs-23-11": "nixpkgs-23-11",
         "orangepi-uboot": "orangepi-uboot",
-        "radxa-uboot": "radxa-uboot",
         "rkbin": "rkbin",
         "rkbin-armbian": "rkbin-armbian"
       }

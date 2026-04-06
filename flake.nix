@@ -16,11 +16,6 @@
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
 
-    bigtreetech-kernel = {
-      url = "github:bigtreetech/linux/linux-6.1.y-cb1";
-      flake = false;
-    };
-
     devenv.url = "github:cachix/devenv";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     nix2container.url = "github:nlewo/nix2container";
@@ -28,11 +23,6 @@
 
     orangepi-uboot = {
       url = "github:orangepi-xunlong/u-boot-orangepi/v2017.09-rk3588";
-      flake = false;
-    };
-
-    radxa-uboot = {
-      url = "github:radxa/u-boot/stable-4.19-rock3";
       flake = false;
     };
 
@@ -54,19 +44,19 @@
       flake = {
         nixosConfigurations.opi3b = inputs.nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
+          specialArgs = { inherit self inputs; };
           modules = [
             inputs.agenix.nixosModules.default
-            self.nixosModules.orangepi-3b-kernel
-            self.nixosModules.firstBoot
-            ({ ... }: {
-              networking.hostName = "opi3b";
-            })
+            ./hosts/opi3b/configuration.nix
           ];
         };
 
         deploy.nodes.opi3b = {
           hostname = "192.168.3.163";
           sshUser = "root";
+          magicRollback = true;
+          activationTimeout = 600;
+          confirmTimeout = 60;
           profiles.system = {
             user = "root";
             path = inputs.deploy-rs.lib.aarch64-linux.activate.nixos self.nixosConfigurations.opi3b;
