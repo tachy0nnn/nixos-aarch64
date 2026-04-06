@@ -7,22 +7,32 @@
   boot.kernelParams = [ "console=ttyS0,1500000" "console=tty0" "consoleblank=0" "brcmfmac.feature_disable=0x82000" ];
   boot.kernelModules = [ "brcmfmac" ];
 
-  age.secrets.wifi-conn.file = ../../wifi-conn.age;
-  system.activationScripts.nm-wifi-provisioning = {
-    text = ''
-      mkdir -p /etc/NetworkManager/system-connections
-      cp ${config.age.secrets.wifi-conn.path} /etc/NetworkManager/system-connections/HomeWiFi.nmconnection
-      chmod 600 /etc/NetworkManager/system-connections/HomeWiFi.nmconnection
-      chown root:root /etc/NetworkManager/system-connections/HomeWiFi.nmconnection
-    '';
-  };
+  age.secrets.wifi-conn.file = ../../../wifi-conn.age;
 
   networking.networkmanager.enable = true;
   networking.networkmanager.wifi.powersave = false;
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHdRZp8XNCQwXOSiSpMLEuy7HLGeU1HXk3jck8zi0gtp"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL9mnzOAW4affA9FFWdRteqcUNvycdy7iT4I4Zp1aBU2"
   ];
+
+  systemd.services.provision-wifi = {
+    description = "Copy Wi-Fi config to NetworkManager";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "network.target" "NetworkManager.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      mkdir -p /etc/NetworkManager/system-connections
+      cp ${config.age.secrets.wifi-conn.path} /etc/NetworkManager/system-connections/HomeWiFi.nmconnection
+      chmod 600 /etc/NetworkManager/system-connections/HomeWiFi.nmconnection
+      chown root:root /etc/NetworkManager/system-connections/HomeWiFi.nmconnection
+      ${pkgs.networkmanager}/bin/nmcli connection reload
+    '';
+  };
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
@@ -74,7 +84,6 @@
     lm_sensors
     btop
     nvme-cli
-    mesa-demos
     pciutils
     fastfetch
     uwufetch

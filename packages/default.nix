@@ -21,6 +21,7 @@
       buildConfig = targetSystem: config:
         evalConfig {
           system = targetSystem;
+          specialArgs = { inherit self inputs; };
           modules = [
             inputs.agenix.nixosModules.default
             self.nixosModules.firstBoot
@@ -32,11 +33,6 @@
       opi3bUboot = pkgsCross2311.callPackage ./orangepi-3b-uboot {
         src = inputs.orangepi-uboot;
         inherit (inputs) rkbin;
-      };
-
-      pantherUboot = pkgsCross2311.callPackage ./panther-x2-uboot {
-        src = inputs.radxa-uboot;
-        rkbin = inputs.rkbin-armbian;
       };
 
       opi3bEval = buildConfig "aarch64-linux" [
@@ -58,35 +54,6 @@
     {
       packages = rec {
         orangepi-3b-uboot = opi3bUboot;
-        panther-x2-uboot = pantherUboot;
-
-        linux-bigtreetech = pkgsARM.callPackage ./bigtreetech-kernel {
-          bigtreetechSrc = inputs.bigtreetech-kernel;
-          kernelPatches = with pkgsARM.kernelPatches; [
-            bridge_stp_helper
-            request_key_helper
-          ];
-        };
-
-        fly-gemini-uboot = pkgsCross2311.callPackage ./fly-gemini-uboot { };
-
-        sdimage-fly-gemini = (buildConfig "aarch64-linux" [
-          self.nixosModules.fly-gemini-kernel
-          ({ ... }: {
-            sdImage.extraPostbuild = ''
-              dd if="${fly-gemini-uboot}/u-boot-sunxi-with-spl.bin" of="$img" conv=fsync,notrunc bs=1024 seek=8
-            '';
-          })
-        ]).config.system.build.sdImage;
-
-        sdimage-bigtreetech = (buildConfig "aarch64-linux" [
-          self.nixosModules.bigtreetech-kernel
-          ({ ... }: {
-            sdImage.extraPostbuild = ''
-              dd if="${./bigtreetech-uboot/u-boot-sunxi-with-spl.bin}" of="$img" conv=fsync,notrunc bs=1024 seek=8
-            '';
-          })
-        ]).config.system.build.sdImage;
 
         sdimage-orangepi-3b = opi3bEval.config.system.build.sdImage;
         orangepi-3b-image = sdimage-orangepi-3b;
@@ -99,18 +66,6 @@
           idbloaderSector = orangepi3bIdbloaderSector;
           uBootSector = orangepi3bUBootSector;
         };
-
-        sdimage-panther-x2 = (buildConfig "aarch64-linux" [
-          self.nixosModules.panther-x2-kernel
-          ({ ... }: {
-            sdImage.firmwarePartitionOffset = 32;
-            sdImage.compressImage = false;
-            sdImage.extraPostbuild = ''
-              dd if=${panther-x2-uboot}/idbloader.img of=$img seek=64 conv=notrunc status=none
-              dd if=${panther-x2-uboot}/u-boot.itb of=$img seek=16384 conv=notrunc status=none
-            '';
-          })
-        ]).config.system.build.sdImage;
       };
     };
 }
