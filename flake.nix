@@ -52,7 +52,7 @@
         };
 
         deploy.nodes.opi3b = {
-          hostname = "192.168.3.163";
+          hostname = "192.168.3.10";
           sshUser = "root";
           magicRollback = true;
           activationTimeout = 600;
